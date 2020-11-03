@@ -1,10 +1,17 @@
-import React, { useEffect, useState } from "react";
+// src/index.js
+
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
+
+import { Header, UserPosts } from "./components";
+
+import { getUsers, getPostsByUser } from "./api";
 
 const App = () => {
   const [userList, setUserList] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userPosts, setUserPosts] = useState([]);
 
-  // this is new
   useEffect(() => {
     getUsers()
       .then((users) => {
@@ -15,25 +22,31 @@ const App = () => {
       });
   }, []);
 
+  useEffect(() => {
+    if (!currentUser) {
+      setUserPosts([]);
+      return;
+    }
+
+    getPostsByUser(currentUser.id)
+      .then((posts) => {
+        setUserPosts(posts);
+      })
+      .catch((error) => {
+        // something something errors
+      });
+  }, [currentUser]);
+
   return (
     <div id="App">
-      <Header userList={userList} />
-    </div>
-  );
-};
-
-import { getUsers } from "./api";
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
-
-import { Header } from "./components";
-
-const App = () => {
-  const [userList, setUserList] = useState([]);
-
-  return (
-    <div id="App">
-      <Header userList={userList} />
+      <Header
+        userList={userList}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+      />
+      {currentUser ? (
+        <UserPosts userPosts={userPosts} currentUser={currentUser} />
+      ) : null}
     </div>
   );
 };
